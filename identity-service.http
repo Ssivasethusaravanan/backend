@@ -1,0 +1,36 @@
+@catalog_service_HostAddress = http://localhost:5101
+
+### Get all categories
+GET {{catalog_service_HostAddress}}/api/categories
+Accept: application/json
+
+### Get category by id
+GET {{catalog_service_HostAddress}}/api/categories/1
+Accept: application/json
+
+### Create a new category
+POST {{catalog_service_HostAddress}}/api/categories
+Content-Type: application/json
+
+{
+  "code": "ELEC",
+  "name": "Electronics"
+}
+
+### Update a category
+PUT {{catalog_service_HostAddress}}/api/categories/1
+Content-Type: application/json
+
+{
+  "code": "ELEC-V2",
+  "name": "Electronics & Gadgets"
+}
+
+### Delete a category
+DELETE {{catalog_service_HostAddress}}/api/categories/1
+
+### Get weather forecast (default)
+GET {{catalog_service_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
