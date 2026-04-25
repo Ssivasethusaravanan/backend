@@ -1,4 +1,5 @@
 using FirebaseAdmin.Messaging;
+using identity_service.Data;
 using identity_service.Models;
 
 namespace identity_service.Services;

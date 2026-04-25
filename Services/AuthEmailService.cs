@@ -4,6 +4,8 @@ using FirebaseAdmin.Auth;
 using identity_service.Data;
 using identity_service.Entities;
 using identity_service.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace identity_service.Services;
 

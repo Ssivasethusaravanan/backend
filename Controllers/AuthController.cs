@@ -96,8 +96,10 @@ public class AuthController(
     /// <summary>
     /// Issues a new access + refresh token pair if the supplied refresh token is not blocklisted.
     /// The old refresh token is immediately blocklisted (single-use rotation).
+    /// NOTE: [AllowAnonymous] because this is called when the access token has expired.
     /// </summary>
     [HttpPost("refresh")]
+    [AllowAnonymous]
     [EnableRateLimiting("standard")]
     [ProducesResponseType(typeof(ApiSuccessResponse<AuthTokenResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -111,18 +113,20 @@ public class AuthController(
             return ApiUnauthorized("The refresh token is no longer valid.");
         }
 
-        // Blocklist the old token immediately (single-use rotation anti-replay)
+        // Blocklist the old token (single-use rotation, anti-replay)
         await jwtTokenService.BlockRefreshTokenAsync(request.RefreshToken, ct);
 
-        // In a full implementation, you'd decode the refresh token to get the user,
-        // then re-fetch their profile. For simplicity we read the current authenticated user.
-        // The access token must still be valid to call this endpoint.
+        // Try reading claims from the (possibly expired) access token if provided via Authorization header.
+        // In production you would store user info in the refresh token or look it up in the DB.
+        // For now we read whatever claims the middleware was able to parse.
         var userId    = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var userEmail = User.FindFirstValue(ClaimTypes.Email);
         var userRole  = User.FindFirstValue(ClaimTypes.Role);
 
+        // If the access token is fully expired and unreadable the claims will be null.
+        // Return a 401 so the client knows to redirect to login.
         if (userId is null || userEmail is null)
-            return ApiUnauthorized("Cannot identify user from token.");
+            return ApiUnauthorized("Session expired. Please sign in again.");
 
         var userDto = new UserDto
         {

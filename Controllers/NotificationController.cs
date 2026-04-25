@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using identity_service.Data;
 using identity_service.Models;
 using identity_service.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -110,14 +111,14 @@ public class NotificationController(
         CancellationToken ct)
     {
         var userId = GetCurrentUserId();
-        var user   = await userRepository.GetByFirebaseUidAsync(userId.ToString(), ct);  // fallback lookup
-        
-        // Fetch FCM token from authenticated user's record
-        var entity = await userRepository.GetFcmTokensByUserIdsAsync([userId], ct);
-        if (entity.Count == 0)
+        if (userId == Guid.Empty)
+            return ApiUnauthorized("Cannot identify authenticated user.");
+
+        var tokens = await userRepository.GetFcmTokensByUserIdsAsync([userId], ct);
+        if (tokens.Count == 0)
             return ApiBadRequest("No registered device found. Please register your device first.");
 
-        await pushService.SubscribeToTopicAsync(entity, request.Topic, ct);
+        await pushService.SubscribeToTopicAsync(tokens, request.Topic, ct);
 
         return ApiOk(new MessageResponse { Message = $"Subscribed to topic '{request.Topic}'." });
     }
