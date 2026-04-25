@@ -1,6 +1,7 @@
 using identity_service.Constants;
 using identity_service.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace identity_service.Controllers;
 
@@ -64,4 +65,73 @@ public abstract class BaseApiController : ControllerBase
             RequestId = GetRequestId()
         });
     }
+
+    protected IActionResult ApiUnauthorized(string detail)
+    {
+        return Unauthorized(new ApiErrorResponse
+        {
+            Error = new ApiError
+            {
+                Type     = ErrorTypes.Unauthorized,
+                Title    = "Unauthorized",
+                Status   = 401,
+                Detail   = detail,
+                Instance = HttpContext.Request.Path,
+            },
+            Timestamp = DateTime.UtcNow.ToString("o"),
+            RequestId = GetRequestId()
+        });
+    }
+
+    protected IActionResult ApiForbidden(string detail)
+    {
+        return StatusCode(StatusCodes.Status403Forbidden, new ApiErrorResponse
+        {
+            Error = new ApiError
+            {
+                Type     = ErrorTypes.Forbidden,
+                Title    = "Forbidden",
+                Status   = 403,
+                Detail   = detail,
+                Instance = HttpContext.Request.Path,
+            },
+            Timestamp = DateTime.UtcNow.ToString("o"),
+            RequestId = GetRequestId()
+        });
+    }
+
+    protected IActionResult ApiConflict(string detail)
+    {
+        return Conflict(new ApiErrorResponse
+        {
+            Error = new ApiError
+            {
+                Type     = ErrorTypes.Conflict,
+                Title    = "Conflict",
+                Status   = 409,
+                Detail   = detail,
+                Instance = HttpContext.Request.Path,
+            },
+            Timestamp = DateTime.UtcNow.ToString("o"),
+            RequestId = GetRequestId()
+        });
+    }
+
+    protected IActionResult ApiBadRequest(string detail)
+    {
+        return BadRequest(new ApiErrorResponse
+        {
+            Error = new ApiError
+            {
+                Type     = ErrorTypes.BadRequest,
+                Title    = "Bad Request",
+                Status   = 400,
+                Detail   = detail,
+                Instance = HttpContext.Request.Path,
+            },
+            Timestamp = DateTime.UtcNow.ToString("o"),
+            RequestId = GetRequestId()
+        });
+    }
 }
+

@@ -52,6 +52,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // ---------- Services (DI) ----------
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+// ---------- Firebase Admin SDK ----------
+builder.Services.AddSingleton<FirebaseInitializer>();
+
+// ---------- Auth Services ----------
+builder.Services.AddScoped<AuthEmailService>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// ---------- Email (SendGrid) ----------
+builder.Services.AddSingleton<IEmailSender, SendGridEmailSender>();
+builder.Services.AddHttpClient("firebase-rest");
+
+// ---------- Push Notifications (FCM) ----------
+builder.Services.AddScoped<PushNotificationService>();
 
 // ---------- Distributed Cache (Upstash REST API → fallback: in-memory) ----------
 var upstashUrl = Environment.GetEnvironmentVariable("UPSTASH_REDIS_REST_URL")
@@ -251,6 +266,9 @@ if (!builder.Environment.IsDevelopment())
 }
 
 var app = builder.Build();
+
+// ---------- Initialize Firebase (eager, at startup) ----------
+app.Services.GetRequiredService<FirebaseInitializer>().Initialize();
 
 // ---------- Middleware Pipeline ----------
 
